@@ -1,0 +1,54 @@
+<div class="login-wrapper" style="display: flex; align-items: center; justify-content: center; min-height: 80vh;">
+    <div class="login-card" style="background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); width: 100%; max-width: 400px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+            <div style="font-size: 40px; margin-bottom: 10px;">🛒</div>
+            <h2 style="font-weight: 800; font-size: 24px;">Admin Login</h2>
+            <p style="color: #9899AC; font-size: 14px;">Welcome back! Please login to your account.</p>
+        </div>
+
+        <form id="loginForm" style="display: flex; flex-direction: column; gap: 20px;">
+            <div id="loginError" style="display: none; background: #FFF5F8; color: #F1416C; padding: 12px; border-radius: 8px; font-size: 13px; text-align: center; border: 1px solid #F1416C33;">
+                Invalid email or password
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Email Address</label>
+                <input type="email" id="email" required placeholder="admin@gmail.com" style="width: 100%; padding: 12px 15px; border-radius: 10px; border: 1px solid #E4E6EF; outline: none; transition: 0.3s;" onfocus="this.style.borderColor='#6C5CE7'">
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Password</label>
+                <input type="password" id="password" required placeholder="••••••••" style="width: 100%; padding: 12px 15px; border-radius: 10px; border: 1px solid #E4E6EF; outline: none; transition: 0.3s;" onfocus="this.style.borderColor='#6C5CE7'">
+            </div>
+
+            <button type="submit" id="loginSubmit" style="background: #6C5CE7; color: white; border: none; padding: 14px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.3s; margin-top: 10px;">
+                Sign In
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const submitBtn = document.getElementById('loginSubmit');
+        const errorDiv = document.getElementById('loginError');
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = 'Signing in...';
+        errorDiv.style.display = 'none';
+
+        const result = await auth.login(email, password);
+
+        if (result.success) {
+            // Success handled by auth.js redirect
+        } else {
+            errorDiv.innerText = result.message;
+            errorDiv.style.display = 'block';
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Sign In';
+        }
+    });
+</script>

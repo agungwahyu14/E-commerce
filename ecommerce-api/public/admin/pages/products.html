@@ -1,0 +1,117 @@
+<div id="products-page">
+    <!-- Toolbar -->
+    <div class="data-card" style="margin-bottom: 25px; padding: 20px;">
+        <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+            <div class="header-search" style="flex: 1; min-width: 250px;">
+                <i class="fas fa-search"></i>
+                <input type="text" id="productSearch" placeholder="Search product name...">
+            </div>
+            <select id="categoryFilter" style="padding: 10px 15px; border-radius: 10px; border: 1px solid var(--border); outline: none; min-width: 150px;">
+                <option value="">All Categories</option>
+                <!-- Categories rendered by JS -->
+            </select>
+            <button onclick="openAddModal()" style="background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-plus"></i> Add Product
+            </button>
+        </div>
+    </div>
+
+    <!-- Products Table -->
+    <div class="data-card">
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">No</th>
+                        <th>Thumbnail</th>
+                        <th>Product Name</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="products-table-body">
+                    <!-- Products rendered by JS -->
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        <div id="pagination-container" style="padding: 20px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+            <div style="color: var(--text-muted); font-size: 14px;">Showing <span id="pagination-info">0</span> products</div>
+            <div style="display: flex; gap: 5px;" id="pagination-buttons">
+                <!-- Buttons rendered by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Modal -->
+    <div id="productModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center;">
+        <div style="background: white; width: 100%; max-width: 600px; border-radius: 20px; overflow: hidden; position: relative; animation: slideUp 0.3s ease;">
+            <div style="padding: 20px 25px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                <h2 id="modalTitle" style="font-weight: 800; font-size: 18px;">Add New Product</h2>
+                <button onclick="closeModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted);">&times;</button>
+            </div>
+            
+            <form id="productForm" style="padding: 25px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <input type="hidden" id="productId">
+                
+                <div style="grid-column: span 2;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Product Name</label>
+                    <input type="text" id="name" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); outline: none;">
+                </div>
+
+                <div style="grid-column: span 2;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Description</label>
+                    <textarea id="description" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); outline: none; height: 100px; resize: none;"></textarea>
+                </div>
+
+                <div>
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Price (IDR)</label>
+                    <input type="number" id="price" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); outline: none;">
+                </div>
+
+                <div>
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Stock</label>
+                    <input type="number" id="stock" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); outline: none;">
+                </div>
+
+                <div>
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Category</label>
+                    <select id="categoryId" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); outline: none;">
+                        <!-- Options rendered by JS -->
+                    </select>
+                </div>
+
+                <div>
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Image URL</label>
+                    <input type="text" id="image_url" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); outline: none;" oninput="previewImage(this.value)">
+                </div>
+
+                <div style="grid-column: span 2; display: flex; align-items: center; gap: 15px; background: var(--bg); padding: 15px; border-radius: 10px;">
+                    <img id="imagePreview" src="https://via.placeholder.com/100" style="width: 80px; height: 80px; border-radius: 10px; object-fit: cover; background: white; border: 1px solid var(--border);">
+                    <p style="font-size: 12px; color: var(--text-muted);">Preview image will appear here once you provide a valid URL.</p>
+                </div>
+
+                <div style="grid-column: span 2; display: flex; justify-content: flex-end; gap: 12px; margin-top: 10px;">
+                    <button type="button" onclick="closeModal()" style="padding: 12px 20px; border-radius: 10px; border: 1px solid var(--border); background: white; font-weight: 600; cursor: pointer;">Cancel</button>
+                    <button type="submit" id="saveBtn" style="padding: 12px 30px; border-radius: 10px; background: var(--primary); color: white; border: none; font-weight: 700; cursor: pointer;">Save Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.pagination-btn { padding: 8px 15px; border-radius: 8px; border: 1px solid var(--border); background: white; cursor: pointer; font-size: 14px; transition: 0.3s; }
+.pagination-btn:hover { background: var(--bg); }
+.pagination-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+.action-btn { width: 32px; height: 32px; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; transition: 0.3s; margin-right: 5px; }
+.btn-edit { background: rgba(108, 92, 231, 0.1); color: var(--primary); }
+.btn-delete { background: rgba(255, 118, 117, 0.1); color: #ff7675; }
+.action-btn:hover { transform: scale(1.1); }
+</style>
+
+<script src="/admin/js/pages/products.js"></script>

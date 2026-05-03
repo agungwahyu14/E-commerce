@@ -1,0 +1,76 @@
+<div id="orders-page">
+    <!-- Filters & Search -->
+    <div class="data-card" style="margin-bottom: 25px; padding: 20px;">
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            <!-- Tabs -->
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;" id="status-tabs">
+                <button class="tab-btn active" data-status="">All Orders</button>
+                <button class="tab-btn" data-status="pending">Pending</button>
+                <button class="tab-btn" data-status="processing">Processing</button>
+                <button class="tab-btn" data-status="shipped">Shipped</button>
+                <button class="tab-btn" data-status="delivered">Delivered</button>
+                <button class="tab-btn" data-status="cancelled">Cancelled</button>
+            </div>
+            
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <div class="header-search" style="flex: 1;">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="orderSearch" placeholder="Search by Order ID or Customer Name...">
+                </div>
+                <button onclick="loadOrders()" style="background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 12px 20px; border-radius: 10px; font-weight: 600; cursor: pointer;">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="data-card">
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Total Amount</th>
+                        <th>Payment</th>
+                        <th>Order Status</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="orders-table-body">
+                    <!-- Orders rendered by JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Order Detail Modal -->
+    <div id="orderModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center;">
+        <div style="background: white; width: 100%; max-width: 800px; border-radius: 20px; overflow: hidden; position: relative; animation: slideUp 0.3s ease; max-height: 90vh; overflow-y: auto;">
+            <div style="padding: 20px 25px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: white; z-index: 10;">
+                <h2 style="font-weight: 800; font-size: 18px;">Order Details <span id="detail-id" style="color: var(--text-muted); font-weight: 400;"></span></h2>
+                <button onclick="closeOrderModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted);">&times;</button>
+            </div>
+            
+            <div id="order-detail-content" style="padding: 25px;">
+                <!-- Content rendered by JS -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.tab-btn { padding: 10px 20px; border-radius: 10px; border: 1px solid var(--border); background: white; cursor: pointer; font-weight: 600; font-size: 14px; transition: 0.3s; color: var(--text-muted); }
+.tab-btn:hover { background: var(--bg); }
+.tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+.order-badge { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: capitalize; }
+.badge-pending { background: #FFF4DE; color: #FFA800; }
+.badge-processing { background: #E1F0FF; color: #009EF7; }
+.badge-shipped { background: #EEE5FF; color: #8950FC; }
+.badge-delivered { background: #E8FFF3; color: #50CD89; }
+.badge-cancelled { background: #FFF5F8; color: #F1416C; }
+</style>
+
+<script src="/admin/js/pages/orders.js"></script>

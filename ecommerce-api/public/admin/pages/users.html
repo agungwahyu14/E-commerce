@@ -1,0 +1,76 @@
+<div id="users-page">
+    <!-- Summary Cards -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 25px;">
+        <div class="stat-card" style="border-left: 5px solid #50CD89;">
+            <div class="stat-icon" style="background: #E8FFF3; color: #50CD89;"><i class="fas fa-user-check"></i></div>
+            <div class="stat-info">
+                <h3>Active Users</h3>
+                <div class="value" id="stat-active-users">0</div>
+            </div>
+        </div>
+        <div class="stat-card" style="border-left: 5px solid #F1416C;">
+            <div class="stat-icon" style="background: #FFF5F8; color: #F1416C;"><i class="fas fa-user-slash"></i></div>
+            <div class="stat-info">
+                <h3>Inactive Users</h3>
+                <div class="value" id="stat-inactive-users">0</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="data-card" style="margin-bottom: 25px; padding: 20px;">
+        <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+            <div class="header-search" style="flex: 1; min-width: 250px;">
+                <i class="fas fa-search"></i>
+                <input type="text" id="userSearch" placeholder="Search by name or email...">
+            </div>
+            <select id="roleFilter" style="padding: 10px 15px; border-radius: 10px; border: 1px solid var(--border); outline: none; min-width: 150px;">
+                <option value="">All Roles</option>
+                <option value="customer">Customer</option>
+                <option value="admin">Admin</option>
+            </select>
+            <button onclick="loadUsers()" style="background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 12px 20px; border-radius: 10px; font-weight: 600; cursor: pointer;">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="data-card">
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">No</th>
+                        <th>User</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Joined Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="users-table-body">
+                    <!-- Users rendered by JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+.role-badge { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+.role-customer { background: #E1F0FF; color: #009EF7; }
+.role-admin { background: #EEE5FF; color: #8950FC; }
+
+.status-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; }
+.status-active { color: #50CD89; }
+.status-active .status-dot { background: #50CD89; }
+.status-inactive { color: #F1416C; }
+.status-inactive .status-dot { background: #F1416C; }
+
+.btn-action-sm { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border); background: white; cursor: pointer; font-size: 12px; font-weight: 600; transition: 0.3s; }
+.btn-action-sm:hover { background: var(--bg); }
+</style>
+
+<script src="/admin/js/pages/users.js"></script>

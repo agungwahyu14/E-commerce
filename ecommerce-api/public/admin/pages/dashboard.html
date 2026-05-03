@@ -1,0 +1,81 @@
+<div id="dashboard-page">
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: #E8FFF3; color: #50CD89;">💰</div>
+            <div class="stat-info">
+                <h3>Total Revenue</h3>
+                <div class="value" id="stat-revenue">Rp 0</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background: #E1F0FF; color: #009EF7;">📦</div>
+            <div class="stat-info">
+                <h3>Total Orders</h3>
+                <div class="value" id="stat-orders">0</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background: #F1F1F2; color: #3F4254;">👥</div>
+            <div class="stat-info">
+                <h3>Total Users</h3>
+                <div class="value" id="stat-users">0</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background: #FFF5F8; color: #F1416C;">🛒</div>
+            <div class="stat-info">
+                <h3>Total Products</h3>
+                <div class="value" id="stat-products">0</div>
+            </div>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 25px; margin-bottom: 30px;">
+        <!-- Revenue Chart -->
+        <div class="data-card">
+            <div class="card-header">
+                <h2 class="card-title">Revenue Chart (Last 7 Days)</h2>
+            </div>
+            <div style="padding: 20px;">
+                <canvas id="revenueChart" height="250"></canvas>
+            </div>
+        </div>
+
+        <!-- Top Products -->
+        <div class="data-card">
+            <div class="card-header">
+                <h2 class="card-title">Top Products</h2>
+            </div>
+            <div id="top-products-list" style="padding: 15px;">
+                <!-- Rendered by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Orders -->
+    <div class="data-card">
+        <div class="card-header">
+            <h2 class="card-title">Recent Orders</h2>
+        </div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Date</th>
+                        <th>Customer</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="recent-orders-table">
+                    <!-- Rendered by JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="/admin/js/pages/dashboard.js"></script>

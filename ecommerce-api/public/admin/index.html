@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ecommerce Admin Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/admin/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Main App Layout (Hidden by default, shown if authenticated) -->
+    <div id="admin-layout" class="admin-container" style="display: none;">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <span style="font-size: 24px;">🛒</span>
+                <span class="logo-text">Admin Panel</span>
+                <button class="close-sidebar" id="closeSidebar"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="#dashboard" class="nav-link" data-page="dashboard">
+                    <span>📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#products" class="nav-link" data-page="products">
+                    <span>📦</span>
+                    <span>Products</span>
+                </a>
+                <a href="#orders" class="nav-link" data-page="orders">
+                    <span>🛍️</span>
+                    <span>Orders</span>
+                </a>
+                <a href="#transactions" class="nav-link" data-page="transactions">
+                    <span>💳</span>
+                    <span>Transaksi</span>
+                </a>
+                <a href="#users" class="nav-link" data-page="users">
+                    <span>👥</span>
+                    <span>Users</span>
+                </a>
+                <a href="#chatbot" class="nav-link" data-page="chatbot">
+                    <span>🤖</span>
+                    <span>Chatbot</span>
+                </a>
+                <div class="nav-divider"></div>
+                <a href="#settings" class="nav-link" data-page="settings">
+                    <span>⚙️</span>
+                    <span>Settings</span>
+                </a>
+            </nav>
+
+            <!-- Admin Info at bottom of sidebar -->
+            <div class="sidebar-footer" style="padding: 20px; border-top: 1px solid rgba(255,255,255,0.05); margin-top: auto;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
+                    <img id="side-avatar" src="https://ui-avatars.com/api/?name=Admin&background=6C5CE7&color=fff" style="width: 40px; height: 40px; border-radius: 10px;">
+                    <div style="overflow: hidden;">
+                        <div id="side-name" style="color: #fff; font-weight: 600; font-size: 14px; white-space: nowrap; text-overflow: ellipsis;">Admin Name</div>
+                        <div style="color: var(--sidebar-text); font-size: 11px;">Administrator</div>
+                    </div>
+                </div>
+                <button id="logoutBtn" style="width: 100%; background: rgba(255,118,117,0.1); color: #ff7675; border: none; padding: 10px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <button class="mobile-toggle" id="mobileToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="header-title">
+                    <h2 id="current-page-title" style="font-weight: 800; font-size: 18px;">Dashboard</h2>
+                </div>
+                
+                <div class="header-profile">
+                    <div class="profile-info" style="margin-right: 15px;">
+                        <span id="top-name" class="profile-name">Admin User</span>
+                        <span class="profile-role">Online</span>
+                    </div>
+                    <img id="top-avatar" src="https://ui-avatars.com/api/?name=Admin&background=6C5CE7&color=fff" alt="Avatar" class="profile-avatar">
+                </div>
+            </header>
+
+            <div id="app-content" class="content-wrapper">
+                <!-- Content injected here -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Auth Container (for Login Page) -->
+    <div id="auth-layout" style="display: none;">
+        <!-- Login content injected here -->
+    </div>
+
+    <script src="/admin/js/auth.js"></script>
+    <script src="/admin/js/app.js"></script>
+</body>
+</html>
