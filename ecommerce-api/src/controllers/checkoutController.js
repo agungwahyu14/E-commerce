@@ -20,14 +20,35 @@ const statusMapping = {
 const createCheckout = async (req, res, next) => {
   const t = await sequelize.transaction();
   try {
-    const { items, paymentMethod, notes } = req.body;
+    const { items, paymentMethod, notes, shippingData } = req.body;
     const user = req.user;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return formatResponse(res, 400, false, 'Items tidak boleh kosong');
     }
 
+    if (!shippingData) {
+      return res.status(400).json({ success: false, message: 'Informasi pengiriman tidak lengkap' });
+    }
+
+    const { courier, service, cost, etd, address, city, province, postalCode, receiverName, receiverPhone } = shippingData;
+
+    if (!courier || !service || !cost || !address || !city || !receiverName) {
+      return res.status(400).json({
+        success: false,
+        message: 'Informasi pengiriman tidak lengkap',
+        errors: {
+          courier: !courier ? 'Kurir wajib dipilih' : null,
+          service: !service ? 'Layanan wajib dipilih' : null,
+          address: !address ? 'Alamat wajib diisi' : null,
+          city: !city ? 'Kota wajib diisi' : null,
+          receiverName: !receiverName ? 'Nama penerima wajib diisi' : null,
+        }
+      });
+    }
+
     let totalAmount = 0;
+    let totalWeight = 0;
     const verifiedItems = [];
 
     for (const item of items) {
@@ -42,6 +63,9 @@ const createCheckout = async (req, res, next) => {
       }
 
       totalAmount += parseFloat(product.price) * item.quantity;
+      // Calculate weight based on items (default 500g per item as per frontend logic)
+      totalWeight += (product.weight || 500) * item.quantity;
+
       verifiedItems.push({
         productId: product.id,
         name: product.name,
@@ -55,11 +79,17 @@ const createCheckout = async (req, res, next) => {
 
     const order = await Order.create({
       userId: user.id,
-      totalAmount,
+      totalAmount: totalAmount + parseFloat(cost),
       paymentMethod,
       notes,
       status: 'pending',
-      paymentStatus: 'unpaid'
+      paymentStatus: 'unpaid',
+      shippingAddress: JSON.stringify({ receiverName, receiverPhone, address, city, province, postalCode }),
+      shippingCity: city,
+      shippingProvince: province || '',
+      shippingCourier: `${courier} ${service}`,
+      shippingCost: parseFloat(cost),
+      shippingWeight: totalWeight
     }, { transaction: t });
 
     const orderItemsData = verifiedItems.map(item => ({
@@ -76,18 +106,27 @@ const createCheckout = async (req, res, next) => {
     const parameter = {
       transaction_details: {
         order_id: midtransOrderId,
-        gross_amount: totalAmount,
+        gross_amount: totalAmount + parseFloat(cost),
       },
       customer_details: {
-        first_name: user.name,
+        first_name: receiverName || user.name,
         email: user.email,
+        phone: receiverPhone || null,
       },
-      item_details: verifiedItems.map(item => ({
-        id: item.productId,
-        price: parseFloat(item.price),
-        quantity: item.quantity,
-        name: item.name,
-      })),
+      item_details: [
+        ...verifiedItems.map(item => ({
+          id: item.productId,
+          price: parseFloat(item.price),
+          quantity: item.quantity,
+          name: item.name,
+        })),
+        {
+          id: 'SHIPPING',
+          price: parseFloat(cost),
+          quantity: 1,
+          name: `Ongkos Kirim - ${courier} ${service}`,
+        }
+      ],
     };
 
     const transaction = await snap.createTransaction(parameter);

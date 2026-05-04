@@ -16,10 +16,12 @@ import OrderCard from '../../components/OrderCard';
 import EmptyState from '../../components/EmptyState';
 import SkeletonLoader from '../../components/SkeletonLoader';
 import orderService from '../../services/orderService';
+import { useAppModal } from '../../hooks/useAppModal';
 
 const STATUS_TABS = ['all', 'pending', 'processing', 'shipped', 'delivered', 'cancelled'];
 
 const MyOrdersScreen = ({ navigation }) => {
+  const { showModal } = useAppModal();
   const [activeTab, setActiveTab] = useState('all');
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -32,9 +34,7 @@ const MyOrdersScreen = ({ navigation }) => {
   const fetchOrders = async (status) => {
     try {
       setIsLoading(true);
-      // orderService.getMyOrders accepts status as parameter
       const data = await orderService.getMyOrders(status);
-      // Response API: { success: true, data: { orders: [...] } }
       setOrders(data.orders ?? []);
     } catch (error) {
       console.error('Fetch orders error:', error);
@@ -43,6 +43,33 @@ const MyOrdersScreen = ({ navigation }) => {
       setIsLoading(false);
       setIsRefreshing(false);
     }
+  };
+
+  const handleCancelOrder = async (orderId) => {
+    showModal({
+      type: 'confirm',
+      title: 'Batalkan Pesanan',
+      message: 'Apakah kamu yakin ingin membatalkan pesanan ini? Tindakan ini tidak dapat diurungkan.',
+      confirmText: 'Ya, Batalkan',
+      cancelText: 'Tidak',
+      onConfirm: async () => {
+        try {
+          await orderService.cancelOrder(orderId);
+          showModal({
+            type: 'success',
+            title: 'Berhasil',
+            message: 'Pesanan berhasil dibatalkan.',
+            onConfirm: () => fetchOrders(activeTab),
+          });
+        } catch (error) {
+          showModal({
+            type: 'error',
+            title: 'Gagal Membatalkan',
+            message: error.response?.data?.message || 'Gagal membatalkan pesanan.',
+          });
+        }
+      },
+    });
   };
 
   const onRefresh = async () => {
@@ -96,6 +123,7 @@ const MyOrdersScreen = ({ navigation }) => {
             <OrderCard
               order={item}
               onPress={() => navigation.navigate('OrderDetail', { orderId: item.id })}
+              onCancel={handleCancelOrder}
             />
           )}
           ListEmptyComponent={

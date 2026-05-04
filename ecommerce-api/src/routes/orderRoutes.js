@@ -6,5 +6,6 @@ const router = express.Router();
 
 router.get('/', authMiddleware, orderController.getMyOrders);
 router.get('/:id', authMiddleware, orderController.getOrderById);
+router.patch('/:orderId/cancel', authMiddleware, orderController.cancelOrder);
 
 module.exports = router;

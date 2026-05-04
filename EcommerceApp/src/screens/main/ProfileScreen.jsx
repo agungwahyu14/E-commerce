@@ -33,14 +33,6 @@ const MENU_ITEMS = [
     iconColor: '#0284C7'
   },
   { 
-    id: 'payment', 
-    title: 'Payment Methods', 
-    subtitle: 'Manage your cards and wallets', 
-    icon: 'card-outline', 
-    color: '#F3E8FF', 
-    iconColor: '#9333EA'
-  },
-  { 
     id: 'settings', 
     title: 'Settings', 
     subtitle: 'Account and app preferences', 
@@ -110,9 +102,6 @@ const ProfileScreen = ({ navigation }) => {
     switch (id) {
       case 'orders':
         navigation.navigate('MyOrders');
-        break;
-      case 'payment':
-        navigation.navigate('PaymentMethod');
         break;
       case 'settings':
         navigation.navigate('Settings');

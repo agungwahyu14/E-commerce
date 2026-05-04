@@ -7,15 +7,18 @@ import {
   TouchableOpacity,
   Image,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/colors';
 import orderService from '../../services/orderService';
 import checkoutService from '../../services/checkoutService';
+import { useAppModal } from '../../hooks/useAppModal';
 
 const OrderDetailScreen = ({ route, navigation }) => {
   const { orderId } = route.params;
+  const { showModal } = useAppModal();
   const [order, setOrder] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -27,7 +30,6 @@ const OrderDetailScreen = ({ route, navigation }) => {
     try {
       setIsLoading(true);
       const data = await checkoutService.getOrderDetail(orderId);
-      // Mapping: data adalah { order: { ... } }
       setOrder(data.order);
     } catch (error) {
       console.error('Fetch order detail error:', error);
@@ -40,6 +42,33 @@ const OrderDetailScreen = ({ route, navigation }) => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleCancelOrder = async () => {
+    showModal({
+      type: 'confirm',
+      title: 'Batalkan Pesanan',
+      message: 'Apakah kamu yakin ingin membatalkan pesanan ini?',
+      confirmText: 'Ya, Batalkan',
+      cancelText: 'Tidak',
+      onConfirm: async () => {
+        try {
+          await orderService.cancelOrder(order.id);
+          showModal({
+            type: 'success',
+            title: 'Berhasil',
+            message: 'Pesanan berhasil dibatalkan.',
+            onConfirm: () => fetchOrderDetail(), // refresh data
+          });
+        } catch (error) {
+          showModal({
+            type: 'error',
+            title: 'Gagal',
+            message: error.response?.data?.message || 'Gagal membatalkan pesanan.',
+          });
+        }
+      },
+    });
   };
 
   const getStatusInfo = (status) => {
@@ -96,9 +125,24 @@ const OrderDetailScreen = ({ route, navigation }) => {
     );
   }
 
+  // Parse shipping address if it's a string
+  let parsedAddress = null;
+  if (order?.shippingAddress) {
+    try {
+      parsedAddress = typeof order.shippingAddress === 'string' 
+        ? JSON.parse(order.shippingAddress) 
+        : order.shippingAddress;
+    } catch (e) {
+      console.error('Error parsing shipping address:', e);
+    }
+  }
+
   const statusInfo = getStatusInfo(order?.status);
   const payStatusInfo = getPaymentStatusInfo(order?.paymentStatus);
-  const formattedTotalPrice = formatPrice(order?.totalAmount);
+  
+  const shippingCost = parseFloat(order?.shippingCost || 0);
+  const totalAmount = parseFloat(order?.totalAmount || 0);
+  const productSubtotal = totalAmount - shippingCost;
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -145,6 +189,44 @@ const OrderDetailScreen = ({ route, navigation }) => {
           </View>
         </View>
 
+        {/* Section Baru: Informasi Pengiriman */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Informasi Pengiriman</Text>
+          
+          {/* Alamat Card */}
+          <View style={styles.shippingCard}>
+            <View style={styles.cardIconContainer}>
+              <Ionicons name="location" size={24} color={Colors.primary} />
+            </View>
+            <View style={styles.cardContent}>
+              <Text style={styles.shippingName}>{order?.shippingAddress?.receiverName || parsedAddress?.receiverName || order?.User?.name || '-'}</Text>
+              <Text style={styles.shippingPhone}>{order?.shippingAddress?.receiverPhone || parsedAddress?.receiverPhone || order?.User?.phone || '-'}</Text>
+              <Text style={styles.shippingAddressText}>
+                {order?.shippingAddress?.address || parsedAddress?.address || '-'}
+              </Text>
+              <Text style={styles.shippingCityText}>
+                {order?.shippingCity || parsedAddress?.city || '-'}, {order?.shippingProvince || parsedAddress?.province || '-'}, {order?.shippingPostalCode || parsedAddress?.postalCode || '-'}
+              </Text>
+            </View>
+          </View>
+
+          {/* Kurir Card */}
+          <View style={[styles.shippingCard, { marginTop: 12 }]}>
+            <View style={[styles.cardIconContainer, { backgroundColor: '#F0FDF4' }]}>
+              <Ionicons name="bicycle" size={24} color="#10B981" />
+            </View>
+            <View style={styles.cardContent}>
+              <Text style={styles.courierName}>
+                {order?.shippingCourier || '-'} {order?.shippingService ? `(${order.shippingService})` : ''}
+              </Text>
+              {order?.shippingEtd && (
+                <Text style={styles.shippingEtd}>Estimasi Pengiriman: {order.shippingEtd} Hari</Text>
+              )}
+              <Text style={styles.shippingCostText}>Ongkos Kirim: {formatPrice(shippingCost)}</Text>
+            </View>
+          </View>
+        </View>
+
         {/* Order Items */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Produk Dipesan</Text>
@@ -167,12 +249,12 @@ const OrderDetailScreen = ({ route, navigation }) => {
           })}
         </View>
 
-        {/* Payment Summary */}
+        {/* Ringkasan Pembayaran */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Ringkasan Pembayaran</Text>
-          <SummaryRow label="Subtotal Produk" value={formattedTotalPrice} />
-          <SummaryRow label="Biaya Pengiriman" value="Rp 0" />
-          <SummaryRow label="Total Pesanan" value={formattedTotalPrice} isTotal />
+          <SummaryRow label="Subtotal Produk" value={formatPrice(productSubtotal)} />
+          <SummaryRow label="Biaya Pengiriman" value={formatPrice(shippingCost)} />
+          <SummaryRow label="Total Pesanan" value={formatPrice(totalAmount)} isTotal />
           
           <View style={styles.payStatusBox}>
             <Text style={styles.payStatusLabel}>Status Pembayaran</Text>
@@ -219,11 +301,26 @@ const OrderDetailScreen = ({ route, navigation }) => {
       {/* Action Footer */}
       <View style={styles.footer}>
         {order?.paymentStatus === 'unpaid' && order?.status === 'pending' ? (
-          <TouchableOpacity 
-            style={styles.primaryActionBtn}
-            onPress={() => navigation.navigate('MidtransPayment', { snapToken: order.snapToken, orderId: order.id })}
+          <View style={{ gap: 8 }}>
+            <TouchableOpacity 
+              style={styles.primaryActionBtn}
+              onPress={() => navigation.navigate('MidtransPayment', { snapToken: order.snapToken, orderId: order.id })}
+            >
+              <Text style={styles.primaryActionText}>Bayar Sekarang</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.cancelBtn}
+              onPress={handleCancelOrder}
+            >
+              <Text style={styles.cancelBtnText}>Batalkan Pesanan</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (order?.status === 'pending' || order?.status === 'processing') ? (
+          <TouchableOpacity
+            style={styles.cancelBtn}
+            onPress={handleCancelOrder}
           >
-            <Text style={styles.primaryActionText}>Bayar Sekarang</Text>
+            <Text style={styles.cancelBtnText}>Batalkan Pesanan</Text>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity style={styles.outlineActionBtn} onPress={() => navigation.navigate('HelpCenter')}>
@@ -282,7 +379,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   scrollContent: {
-    paddingBottom: 100,
+    paddingBottom: 120,
   },
   statusSection: {
     flexDirection: 'row',
@@ -382,6 +479,63 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.textSecondary,
     marginTop: 2,
+  },
+  shippingCard: {
+    flexDirection: 'row',
+    backgroundColor: Colors.background,
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  cardIconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: '#F0F7FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  cardContent: {
+    flex: 1,
+  },
+  shippingName: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: Colors.text,
+    marginBottom: 2,
+  },
+  shippingPhone: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    marginBottom: 6,
+  },
+  shippingAddressText: {
+    fontSize: 14,
+    color: Colors.text,
+    lineHeight: 20,
+  },
+  shippingCityText: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    marginTop: 4,
+  },
+  courierName: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: Colors.text,
+    marginBottom: 4,
+  },
+  shippingEtd: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    marginBottom: 2,
+  },
+  shippingCostText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.primary,
   },
   productItem: {
     flexDirection: 'row',
@@ -504,10 +658,6 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   footer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
     padding: 16,
     backgroundColor: Colors.surface,
     borderTopWidth: 1,
@@ -533,6 +683,19 @@ const styles = StyleSheet.create({
   },
   outlineActionText: {
     color: Colors.primary,
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  cancelBtn: {
+    borderWidth: 1,
+    borderColor: Colors.error,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  cancelBtnText: {
+    color: Colors.error,
     fontSize: 16,
     fontWeight: 'bold',
   },

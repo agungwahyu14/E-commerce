@@ -32,20 +32,10 @@ const orderService = {
     }
   },
 
-  /**
-   * Membatalkan pesanan
-   * @param {string} id 
-   * @returns {Promise}
-   */
-  cancelOrder: async (id) => {
-    try {
-      const response = await api.post(`/orders/${id}/cancel`);
-      return response.data;
-    } catch (error) {
-      console.error('Error in cancelOrder:', error);
-      throw error;
-    }
-  }
+  cancelOrder: async (orderId) => {
+    const response = await api.patch(`/orders/${orderId}/cancel`);
+    return response.data;
+  },
 };
 
 export default orderService;

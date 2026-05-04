@@ -6,48 +6,42 @@ const checkoutService = {
    * @param {Array} cartItems - Array of items from CartContext or route params
    * @param {string} paymentMethod - Selected payment method
    * @param {string} notes - Optional notes
+   * @param {Object} shippingData - Optional shipping information
    * @returns {Promise} - { orderId, snapToken, midtransOrderId, totalAmount }
    */
-  createCheckout: async (cartItems, paymentMethod, notes) => {
-    // 1. Mapping data cart dengan benar
-    // Cart items usually have a nested Product object from Sequelize include
-    const items = cartItems.map(item => {
-      const product = item.Product || {};
-      return {
-        productId: product.id || item.productId || item.id,
-        name: product.name || item.name,
-        price: product.price || item.price,
-        quantity: item.quantity,
-        image_url: product.image_url || item.image_url,
-      };
-    });
+  createCheckout: async (cartItems, paymentMethod, notes, shippingData) => {
+    console.log('[Checkout] shippingData diterima:', JSON.stringify(shippingData, null, 2));
 
-    // 2. Validasi data sebelum kirim
-    items.forEach(item => {
-      if (!item.productId || !item.name || item.price === undefined || !item.quantity) {
-        console.error('[Checkout Error] Incomplete item data:', item);
-        throw new Error("Data produk tidak lengkap, silakan refresh keranjang");
-      }
-    });
+    const items = cartItems.map(item => ({
+      productId: item.productId || item.id,
+      name: item.Product?.name || item.name,
+      price: parseFloat(item.Product?.price || item.price),
+      quantity: item.quantity,
+      image_url: item.Product?.image_url || item.image_url,
+    }));
 
-    const requestData = {
+    const payload = {
       items,
-      paymentMethod,
-      notes: notes || ''
+      paymentMethod: paymentMethod || 'midtrans',
+      notes: notes || '',
+      shippingData: {
+        courier: shippingData.courier,
+        service: shippingData.service,
+        cost: parseFloat(shippingData.cost),
+        etd: shippingData.etd || '',
+        address: shippingData.address,
+        city: shippingData.city,
+        province: shippingData.province || '',
+        postalCode: shippingData.postalCode || '',
+        receiverName: shippingData.receiverName,
+        receiverPhone: shippingData.receiverPhone || '',
+      },
     };
 
-    // 3. Log request data untuk debug
-    console.log('[Checkout Service] Sending Request Body:', JSON.stringify(requestData, null, 2));
+    console.log('[Checkout] Final payload:', JSON.stringify(payload, null, 2));
 
-    try {
-      const response = await api.post('/checkout', requestData);
-      console.log('[Checkout Service] Success Response:', JSON.stringify(response.data, null, 2));
-      return response.data.data;
-    } catch (error) {
-      const errorMsg = error.response?.data?.message || error.message;
-      console.error('[Checkout Service] API Error:', errorMsg);
-      throw new Error(errorMsg);
-    }
+    const response = await api.post('/checkout', payload);
+    return response.data.data;
   },
 
   /**

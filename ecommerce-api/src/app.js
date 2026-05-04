@@ -21,6 +21,7 @@ const chatbotRoutes = require('./routes/chatbotRoutes');
 const chatbotAdminRoutes = require('./routes/admin/chatbotAdminRoutes');
 const checkoutRoutes = require('./routes/checkoutRoutes');
 const transactionAdminRoutes = require('./routes/admin/transactionAdminRoutes');
+const shippingRoutes = require('./routes/shippingRoutes');
 
 const app = express();
 
@@ -46,6 +47,7 @@ app.use('/api/admin/chatbot', chatbotAdminRoutes);
 app.use('/api/admin/transactions', transactionAdminRoutes);
 app.use('/api/chatbot', chatbotRoutes);
 app.use('/api/checkout', checkoutRoutes);
+app.use('/api/shipping', shippingRoutes);
 
 // Admin UI - Serve static files from public/admin
 app.use('/admin', express.static(path.join(__dirname, '../public/admin')));

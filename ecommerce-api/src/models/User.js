@@ -28,6 +28,26 @@ const User = sequelize.define('User', {
     type: DataTypes.TEXT,
     allowNull: true,
   },
+  latitude: {
+    type: DataTypes.DECIMAL(10, 8),
+    allowNull: true,
+  },
+  longitude: {
+    type: DataTypes.DECIMAL(11, 8),
+    allowNull: true,
+  },
+  city: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  province: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  postalCode: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
   role: {
     type: DataTypes.ENUM('customer', 'admin'),
     defaultValue: 'customer',

@@ -11,7 +11,6 @@ import ProductDetailScreen from '../screens/main/ProductDetailScreen';
 import SearchScreen from '../screens/main/SearchScreen';
 import MyOrdersScreen from '../screens/main/MyOrdersScreen';
 import OrderDetailScreen from '../screens/main/OrderDetailScreen';
-import PaymentMethodScreen from '../screens/main/PaymentMethodScreen';
 import HelpCenterScreen from '../screens/main/HelpCenterScreen';
 import SettingsScreen from '../screens/main/SettingsScreen';
 import ProductListScreen from '../screens/main/ProductListScreen';
@@ -24,6 +23,7 @@ import MidtransPaymentScreen from '../screens/main/MidtransPaymentScreen';
 import PaymentSuccessScreen from '../screens/payment/PaymentSuccessScreen';
 import PaymentFailedScreen from '../screens/payment/PaymentFailedScreen';
 import PaymentPendingScreen from '../screens/payment/PaymentPendingScreen';
+import MapPickerScreen from '../screens/main/MapPickerScreen';
 import { Colors } from '../constants/colors';
 
 const Tab = createBottomTabNavigator();
@@ -68,6 +68,15 @@ const MainNavigator = () => {
       <Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />
       <Stack.Screen 
+        name="MapPicker" 
+        component={MapPickerScreen} 
+        options={{ 
+          headerShown: false,
+          gestureEnabled: true,
+          cardStyleInterpolator: CardStyleInterpolators.forVerticalIOS,
+        }}
+      />
+      <Stack.Screen 
         name="Search" 
         component={SearchScreen} 
         options={{
@@ -77,7 +86,6 @@ const MainNavigator = () => {
       />
       <Stack.Screen name="MyOrders" component={MyOrdersScreen} />
       <Stack.Screen name="OrderDetail" component={OrderDetailScreen} />
-      <Stack.Screen name="PaymentMethod" component={PaymentMethodScreen} />
       <Stack.Screen name="HelpCenter" component={HelpCenterScreen} />
       <Stack.Screen name="Settings" component={SettingsScreen} />
       <Stack.Screen name="ProductList" component={ProductListScreen} />

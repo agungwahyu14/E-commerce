@@ -28,7 +28,10 @@ const getProfile = async (req, res, next) => {
 const updateProfile = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    const { name, phone, address, bio } = req.body;
+    const { 
+      name, phone, address, bio, 
+      latitude, longitude, city, province, postalCode 
+    } = req.body;
 
     if (name && name.length < 2) {
       return formatResponse(res, 400, false, 'Nama minimal 2 karakter');
@@ -45,6 +48,11 @@ const updateProfile = async (req, res, next) => {
     if (phone !== undefined) user.phone = phone;
     if (address !== undefined) user.address = address;
     if (bio !== undefined) user.bio = bio;
+    if (latitude !== undefined) user.latitude = latitude;
+    if (longitude !== undefined) user.longitude = longitude;
+    if (city !== undefined) user.city = city;
+    if (province !== undefined) user.province = province;
+    if (postalCode !== undefined) user.postalCode = postalCode;
 
     await user.save();
 

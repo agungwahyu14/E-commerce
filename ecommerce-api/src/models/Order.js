@@ -58,6 +58,30 @@ const Order = sequelize.define('Order', {
   pdfUrl: {
     type: DataTypes.STRING,
     allowNull: true,
+  },
+  shippingAddress: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+  shippingCity: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  shippingProvince: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  shippingCourier: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  shippingCost: {
+    type: DataTypes.DECIMAL(10, 2),
+    defaultValue: 0,
+  },
+  shippingWeight: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
   }
 }, {
   timestamps: true,

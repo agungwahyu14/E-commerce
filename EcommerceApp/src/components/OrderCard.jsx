@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../constants/colors';
 import { useAppModal } from '../hooks/useAppModal';
 
-const OrderCard = ({ order, onPress }) => {
+const OrderCard = ({ order, onPress, onCancel }) => {
   const { showModal } = useAppModal();
   const { id, createdAt, status, paymentStatus, OrderItems, totalAmount, paymentMethod, vaNumber } = order;
   
@@ -95,29 +95,18 @@ const OrderCard = ({ order, onPress }) => {
 
       {/* Footer / Actions */}
       <View style={styles.footer}>
+        {(status?.toLowerCase() === 'pending' || status?.toLowerCase() === 'processing') && (
+          <TouchableOpacity 
+            style={[styles.actionBtn, styles.cancelBtn]}
+            onPress={() => onCancel && onCancel(id)}
+          >
+            <Text style={styles.cancelBtnText}>Batalkan</Text>
+          </TouchableOpacity>
+        )}
         {status?.toLowerCase() === 'pending' && (
-          <>
-            <TouchableOpacity 
-              style={[styles.actionBtn, styles.cancelBtn]}
-              onPress={() => {
-                showModal({
-                  type: 'confirm',
-                  title: 'Batalkan Pesanan',
-                  message: 'Apakah Anda yakin ingin membatalkan pesanan ini?',
-                  confirmText: 'Ya, Batalkan',
-                  onConfirm: () => {
-                    // Logic untuk batalkan (biasanya panggil API)
-                    console.log('Batalkan order', id);
-                  }
-                });
-              }}
-            >
-              <Text style={styles.cancelBtnText}>Batalkan</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.actionBtn, styles.primaryBtn]}>
-              <Text style={styles.primaryBtnText}>Bayar Sekarang</Text>
-            </TouchableOpacity>
-          </>
+          <TouchableOpacity style={[styles.actionBtn, styles.primaryBtn]}>
+            <Text style={styles.primaryBtnText}>Bayar Sekarang</Text>
+          </TouchableOpacity>
         )}
         {(status?.toLowerCase() === 'processing' || status?.toLowerCase() === 'shipped') && (
           <TouchableOpacity style={[styles.actionBtn, styles.outlineBtn]}>

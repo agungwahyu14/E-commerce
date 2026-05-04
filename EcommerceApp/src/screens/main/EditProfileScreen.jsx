@@ -20,7 +20,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useAppModal } from '../../hooks/useAppModal';
 import profileService from '../../services/profileService';
 
-const EditProfileScreen = ({ navigation }) => {
+const EditProfileScreen = ({ navigation, route }) => {
   const { user, updateUserState } = useAuth();
   const { showModal } = useAppModal();
   const [name, setName] = useState(user?.name || '');
@@ -28,12 +28,36 @@ const EditProfileScreen = ({ navigation }) => {
   const [address, setAddress] = useState(user?.address || '');
   const [bio, setBio] = useState(user?.bio || '');
   const [avatar, setAvatar] = useState(user?.avatar_url || null);
+  
+  // New location states
+  const [latitude, setLatitude] = useState(user?.latitude || null);
+  const [longitude, setLongitude] = useState(user?.longitude || null);
+  const [city, setCity] = useState(user?.city || '');
+  const [province, setProvince] = useState(user?.province || '');
+  const [postalCode, setPostalCode] = useState(user?.postalCode || '');
+
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     fetchProfile();
   }, []);
+
+  // Listen for selected location from MapPicker
+  useEffect(() => {
+    if (route.params?.selectedLocation) {
+      const loc = route.params.selectedLocation;
+      setAddress(loc.address);
+      setLatitude(parseFloat(loc.latitude));
+      setLongitude(parseFloat(loc.longitude));
+      setCity(loc.city);
+      setProvince(loc.province);
+      if (loc.postalCode) setPostalCode(loc.postalCode);
+
+      // Clear params to avoid re-triggering
+      navigation.setParams({ selectedLocation: undefined });
+    }
+  }, [route.params?.selectedLocation]);
 
   const fetchProfile = async () => {
     try {
@@ -42,6 +66,12 @@ const EditProfileScreen = ({ navigation }) => {
       setPhone(data.phone || user?.phone || '');
       setAddress(data.address || user?.address || '');
       setBio(data.bio || user?.bio || '');
+      setLatitude(data.latitude ? parseFloat(data.latitude) : null);
+      setLongitude(data.longitude ? parseFloat(data.longitude) : null);
+      setCity(data.city || user?.city || '');
+      setProvince(data.province || user?.province || '');
+      setPostalCode(data.postalCode || user?.postalCode || '');
+      
       if (data.avatar_url) setAvatar(data.avatar_url);
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -107,7 +137,6 @@ const EditProfileScreen = ({ navigation }) => {
       setIsUploading(true);
       const response = await profileService.uploadAvatar(uri);
       if (response.success && response.data.avatar_url) {
-        // Update global auth state so changes reflect immediately everywhere
         updateUserState({ avatar_url: response.data.avatar_url });
       }
     } catch (error) {
@@ -120,6 +149,16 @@ const EditProfileScreen = ({ navigation }) => {
     } finally {
       setIsUploading(false);
     }
+  };
+
+  const openMapPicker = () => {
+    // Navigate without callback function
+    navigation.navigate('MapPicker', {
+      initialLocation: latitude && longitude ? { 
+        latitude: parseFloat(latitude), 
+        longitude: parseFloat(longitude) 
+      } : null,
+    });
   };
 
   const handleSave = async () => {
@@ -138,12 +177,16 @@ const EditProfileScreen = ({ navigation }) => {
         name,
         phone,
         address,
-        bio
+        bio,
+        latitude: latitude ? parseFloat(latitude) : null,
+        longitude: longitude ? parseFloat(longitude) : null,
+        city,
+        province,
+        postalCode
       };
       const response = await profileService.updateProfile(profileData);
 
       if (response.success) {
-        // Update global state with all new data
         updateUserState(profileData);
         showModal({
           type: 'success',
@@ -200,6 +243,8 @@ const EditProfileScreen = ({ navigation }) => {
 
           {/* Form Section */}
           <View style={styles.formSection}>
+            <Text style={styles.sectionTitle}>Informasi Dasar</Text>
+            
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Nama Lengkap</Text>
               <TextInput
@@ -222,19 +267,6 @@ const EditProfileScreen = ({ navigation }) => {
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Alamat Lengkap</Text>
-              <TextInput
-                style={[styles.input, styles.textArea, { height: 80 }]}
-                value={address}
-                onChangeText={setAddress}
-                placeholder="Jl. Contoh No. 123..."
-                multiline
-                numberOfLines={3}
-                textAlignVertical="top"
-              />
-            </View>
-
-            <View style={styles.inputGroup}>
               <View style={styles.labelRow}>
                 <Text style={styles.label}>Bio</Text>
                 <Text style={styles.charCounter}>{bio.length}/150</Text>
@@ -248,6 +280,39 @@ const EditProfileScreen = ({ navigation }) => {
                 numberOfLines={4}
                 maxLength={150}
                 textAlignVertical="top"
+              />
+            </View>
+
+            <Text style={[styles.sectionTitle, { marginTop: 10 }]}>Alamat & Lokasi</Text>
+            
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Pilih Lokasi</Text>
+              <TouchableOpacity style={styles.mapBtn} onPress={openMapPicker}>
+                <Ionicons name="map-outline" size={20} color={Colors.primary} />
+                <Text style={styles.mapBtnText}>Pilih Lokasi di Peta 📍</Text>
+              </TouchableOpacity>
+              
+              {address ? (
+                <View style={styles.addressPreview}>
+                  <Text style={styles.addressPreviewLabel}>Alamat Terpilih:</Text>
+                  <Text style={styles.addressPreviewText}>{address}</Text>
+                  <View style={styles.addressMetaRow}>
+                    <Text style={styles.addressMetaText}>🏙️ {city || '-'}</Text>
+                    <Text style={styles.addressMetaText}>🗺️ {province || '-'}</Text>
+                  </View>
+                </View>
+              ) : null}
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Kode Pos</Text>
+              <TextInput
+                style={styles.input}
+                value={postalCode}
+                onChangeText={setPostalCode}
+                placeholder="Contoh: 12345"
+                keyboardType="number-pad"
+                maxLength={5}
               />
             </View>
           </View>
@@ -280,7 +345,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
-
   },
   backBtn: {
     padding: 4,
@@ -327,10 +391,6 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: Colors.surface,
   },
-  headerContainer: {
-    alignItems: 'center',
-    backgroundColor: Colors.background,
-  },
   avatarNote: {
     marginTop: 12,
     fontSize: 12,
@@ -338,6 +398,13 @@ const styles = StyleSheet.create({
   },
   formSection: {
     paddingHorizontal: 20,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: Colors.primary,
+    marginBottom: 20,
+    marginTop: 10,
   },
   inputGroup: {
     marginBottom: 20,
@@ -371,6 +438,51 @@ const styles = StyleSheet.create({
   textArea: {
     height: 100,
     paddingTop: 12,
+  },
+  mapBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F0F7FF',
+    borderWidth: 1,
+    borderColor: '#D0E7FF',
+    borderRadius: 12,
+    paddingVertical: 14,
+    gap: 8,
+  },
+  mapBtnText: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: Colors.primary,
+  },
+  addressPreview: {
+    marginTop: 12,
+    padding: 16,
+    backgroundColor: Colors.background,
+    borderRadius: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: Colors.primary,
+  },
+  addressPreviewLabel: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: Colors.textSecondary,
+    marginBottom: 4,
+  },
+  addressPreviewText: {
+    fontSize: 14,
+    color: Colors.text,
+    lineHeight: 20,
+  },
+  addressMetaRow: {
+    flexDirection: 'row',
+    marginTop: 8,
+    gap: 12,
+  },
+  addressMetaText: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    fontWeight: '500',
   },
   saveBtn: {
     backgroundColor: Colors.primary,
